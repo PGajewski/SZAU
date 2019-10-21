@@ -1,0 +1,11 @@
+clear all;
+close all;
+
+%wpisanie danych
+C=0.4;
+a=8;
+F1p=0.73;
+FDp=0.14;
+tau=150;
+h2p=58.14;
+Ts = 0.1;

@@ -11,6 +11,7 @@ function [t,x,y] = linearSimulation(F1_with_time,FD_with_time, G, Ts, sim_time, 
 temp1 = size(F1_with_time);
 temp2 = size(FD_with_time);
 assert((temp1(2) == 2 && temp2(2) == 2),'Incompatible changing moment values!');
+assert((isnumeric(tau)),'Transport delay must be a number!');
 assert((isvector(x_0) && length(x_0) == 2),'Init condition must be a vector with size 2'); 
 
 %Check last value change moment timestep.
@@ -23,26 +24,27 @@ counter_F1 = 2;
 counter_FD = 2;
 
 %Add simulation end to changes moments.
-F1 = [F1_with_time;[sim_time,F1_with_time(end,2)]];
+F1 = [FH_with_time;[sim_time,F1_with_time(end,2)]];
 FD = [FD_with_time;[sim_time,FD_with_time(end,2)]];
 
 t = 0:Ts:sim_time;
-values = zeros(length(t),2);
-values(1,:) = [F1_with_time(1,2),FD_with_time(1,2)];
+values = zeros(length(t),4);
+values(1,:) = [FH_with_time(1,2),FC_with_time(1,2),FD_with_time(1,2),TD_with_time(1,2)];
 % Merge all changing signal variable into one (ugly version).
 for i=1:length(t)
 % Main simulation.
     %Increase counters.
     actual_time = t(i);
-    actual_F1 = 0;
+    actual_FH = 0;
     actual_FC = 0;
-
+    actual_FD = 0;
+    actual_TD = 0;
     %Increase counters.
-    if (actual_time >= F1(counter_F1,1)) && (counter_F1 ~= F1_length)
-        actual_F1 = F1(counter_F1,2);
-        counter_F1 = counter_F1 + 1;
+    if (actual_time >= FH(counter_FH,1)) && (counter_FH ~= FH_length)
+        actual_FH = FH(counter_FH,2);
+        counter_FH = counter_FH + 1;
     else
-        actual_F1 = F1(counter_F1-1,2);
+        actual_FH = FH(counter_FH-1,2);
     end
 
     if (actual_time >= FD(counter_FD,1)) && (counter_FD ~= FD_length)
@@ -52,7 +54,14 @@ for i=1:length(t)
         actual_FD = FD(counter_FD-1,2);
     end
 
-    values(i,:) = [actual_F1 actual_FD];
+    if (actual_time >= TD(counter_TD,1)) && (counter_TD ~= TD_length)
+        actual_TD = TD(counter_TD,2);
+        counter_TD = counter_TD + 1;
+    else
+        actual_TD = TD(counter_TD-1,2);
+    end
+
+    values(i,:) = [actual_FH actual_FC actual_FD actual_TD];
     
     if actual_time == sim_time
         break;

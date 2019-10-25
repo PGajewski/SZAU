@@ -64,17 +64,21 @@ t = [];
 s = size(values_with_time);
 init_values = x_0;
 % Simulate by all changes moments.
+% u = [];
 for i=1:(s(2)-1)
     stateHandler = @(t,x) stateFunction(t,x,values_with_time(2,i), values_with_time(3,i));
     [temp1,temp2]=ode45(stateHandler,[values_with_time(1,i) values_with_time(1,i+1)],init_values, options);
+    %s_t = size(temp1);
     t = [t temp1(1:end-1,:)'];
     x = [x temp2(1:end-1,:)'];
+    %u = [u [ones(1,s_t(1)-1)*values_with_time(2,i);ones(1,s_t(1)-1)*values_with_time(3,i)]];
     % Remember previous state for next step.
     init_values = temp2(end,:);
 end
 
 t =[t sim_time];
 x =[x init_values'];
+%u = [u [values_with_time(2,end);values_with_time(3,end)]];
 process_length = length(t);
 
 %Count output.

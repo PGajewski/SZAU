@@ -49,7 +49,7 @@ u22 = 0;
 A = [a11, a12; a21, a22];
 B = [u11 u12; u21 u22];
 C = [0 1];
-D = [0];
+D = [0 0];
 
 sys = ss(A,B,C,D,'InputDelay',[tau,0]);
 %sys = ss(A,B,C,D);

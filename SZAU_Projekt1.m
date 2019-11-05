@@ -155,3 +155,5 @@ for i=1:steps_number
     plot(t,y);
     hold on;
 end
+
+%% Prediction DMC

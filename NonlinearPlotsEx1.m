@@ -33,4 +33,4 @@ legend('F1','Fd - zak³ócenie', 'Location', 'west');
 xlabel('Czas [s]');
 ylabel('Wejœcia obiektu');
 title(sprintf('Przebieg wejœæ'));
-print(sprintf('pdfs/SymulacjaF1=%dFd=%d.pdf', F1JumpVal, FdJumpVal), '-dpdf');
+print(sprintf('pdfs/SymulacjaObiektu/SymulacjaF1=%dFd=%d.pdf', F1JumpVal, FdJumpVal), '-dpdf');

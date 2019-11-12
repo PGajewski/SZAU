@@ -61,4 +61,4 @@ legend('F1','Fd - zak³ócenie', 'Location', 'west');
 xlabel('Czas [s]');
 ylabel('Wejœcia obiektu');
 title(sprintf('Przebieg wejœæ po linearyzacji'));
-print(sprintf('pdfs/SymulacjaLiniowaF1=%dFd=%d.pdf', F1JumpVal, FdJumpVal), '-dpdf');
+print(sprintf('pdfs/SymulacjaLiniowaF1=%dFd=%d', F1JumpVal, FdJumpVal), '-dpdf');

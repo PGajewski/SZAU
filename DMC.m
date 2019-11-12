@@ -62,11 +62,10 @@ y = ones(Tk, 1).*hlin(2);
 % h1 = 0;
 h = [hlin(1), hlin(2)];
 
-Fd = [ ones(1,Tk/2).*14, ones(1,Tk/2).*16 ] ;
 % g³ówna pêtla symulacji
 for k=2:Tk
     if k > (Gz.InputDelay(1))
-        stateHandler = @(t,x) stateFunction(t,x,uk(k - (Gz.InputDelay(1))), Fd(k));%ulin(2));
+        stateHandler = @(t,x) stateFunction(t,x,uk(k - (Gz.InputDelay(1))), ulin(2));
         [t, h] = ode45(stateHandler,[0 Gz.Ts],h(end, :), options);
         y(k) = h(end,2);
 %         h = stateFunction(0,[h1, y(k)],uk(k - (Gz.InputDelay(1))), ulin(2));
@@ -96,15 +95,21 @@ for k=2:Tk
 end
 
 figure;
+subplot(2,1,1);
+title(strcat('Fd = 14 = const, yzad = ', num2str(yzad)));
+plot(ones(Tk,1).*yzad(1), 'b-');
+hold on;
+stairs(y, 'r');
+hold off;
+legend('Wyjœcie zadane', 'wyjœcie regulatora', 'Location', 'east');
+xlabel('k');
+ylabel('y');
 subplot(2,1,2);
 stairs( uk, 'g');
 title(strcat('Dzialanie regulatora dla nastaw D=', num2str(D), ' N =', num2str(N), ' Nu=', num2str(Nu), ' lambda=',num2str(lambda)));
 legend('Sterowanie');
-subplot(2,1,1);
-stairs(ones(Tk,1).*yzad(1), 'b');
-hold on;
-stairs(y, 'r');
-legend('Wyjœcie zadane', 'wyjœcie regulatora', 'Location', 'east');
 xlabel('k');
-ylabel('y/u');
-hold off;
+ylabel('u');
+skok = yzad - 15.6384;
+file = strcat('pdfs/DMCskok=', num2str(round(skok,1)), '.pdf');
+print(file, '-dpdf');

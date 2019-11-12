@@ -41,7 +41,7 @@ dmc.setValue(h2p+0.5);
 uk= ones((Gz.InputDelay(1)),1).*F1p;
 y = ones(Tk, 1).*h2p;
 h = [h1p, h2p];
-Fd = FDp+3/Tk:3/Tk:FDp+3;
+Fd = [ ones(1,Tk/2).*14, ones(1,Tk/2).*16 ] ;
 %Main simulation loop.
 for k=2:Tk
     if k > (Gz.InputDelay(1))

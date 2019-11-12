@@ -61,10 +61,12 @@ uk= ones((Gz.InputDelay(1)),1).*ulin(1);
 y = ones(Tk, 1).*hlin(2);
 % h1 = 0;
 h = [hlin(1), hlin(2)];
+
+Fd = [ ones(1,Tk/2).*14, ones(1,Tk/2).*16 ] ;
 % g³ówna pêtla symulacji
 for k=2:Tk
     if k > (Gz.InputDelay(1))
-        stateHandler = @(t,x) stateFunction(t,x,uk(k - (Gz.InputDelay(1))), ulin(2));
+        stateHandler = @(t,x) stateFunction(t,x,uk(k - (Gz.InputDelay(1))), Fd(k));%ulin(2));
         [t, h] = ode45(stateHandler,[0 Gz.Ts],h(end, :), options);
         y(k) = h(end,2);
 %         h = stateFunction(0,[h1, y(k)],uk(k - (Gz.InputDelay(1))), ulin(2));

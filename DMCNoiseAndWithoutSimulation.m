@@ -6,7 +6,7 @@ lambda =1;
 yzad = h2p+0.5;
 Tk = 4000;
 
-Fd = [ ones(1,Tk/2).*FDp, ones(1,Tk/2).*(FDp+5) ] ;
+Fd = [ ones(1,Tk/2).*FDp, ones(1,Tk/2).*(FDp-5) ] ;
 
 options = odeset('RelTol',1e-8,'AbsTol',1e-10);
 

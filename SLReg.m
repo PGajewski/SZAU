@@ -11,9 +11,11 @@ classdef SLReg < handle
         J
         psi
         N
-        Gz
+        MFs
+        s
         D
         Nu
+        size
         u_prev
         yzad
         deltaup
@@ -21,10 +23,11 @@ classdef SLReg < handle
         umax
         ymin
         ymax
+        MembershipFunctions
     end
     
     methods
-        function obj = SLReg(D, N, Nu, lambda, Umin, Umax, Ymin, Ymax)
+        function obj = SLReg(D, N, Nu, lambda, Umin, Umax, Ymin, Ymax, Gzs, MembershipFunctions)
             %DM Construct an instance of this class
             %   Detailed explanation goes here
             obj.N = N;
@@ -38,6 +41,17 @@ classdef SLReg < handle
             obj.J = tril(Nu);
             obj.ymin = ones(N,1).*Ymin;
             obj.ymax = ones(N,1).*Ymax;
+            obj.MembershipFunctions = MembershipFunctions;
+            obj.size = size(Gzs);
+            obj.s = cell(obj.size);
+            %Creates steps responses for all transfer functions.
+            for i=1:obj.size(1,1)
+                for j=1:obj.size(1,2)
+                    s = step(Gzs{i,j}, D/Gzs{i,j}.Ts);
+                    s = s(:,:,1);
+                    obj.s{i,j} = s(1:D);
+                end
+            end
         end
         
         function [] = reset(obj,u_p)
@@ -50,33 +64,23 @@ classdef SLReg < handle
             obj.yzad=yzad';
         end
         
-        function [] = newModel(obj, FDp)
-            h = getLinearModel(obj.u_prev, FDp);
-            A = zeros(2,2);
-            B = zeros(2,2);
-            C = zeros(1,2);
-            D1 = zeros(1,2);
-            
-            C1 = 0.35;  
-            C2 = 0.3;
-            alfa1 = 20;
-            alfa2 = 22;
-            tau = 150;
-            
-            A(1,1) = alfa1 * h(1)^(-5/2)/(2*C1) - 2/(3*C1) * (obj.u_prev + FDp) * h(1)^(-3);
-            A(2,1) = alfa1/(6*C2) * h(1)^(-1/2) * h(2)^-2;
-            A(2,2) = -2 * alfa1/(3*C2) * sqrt(h(1)) * h(2)^-3 + alfa2/(2*C2) * h(2)^(-5/2);
-            B(1,1) = h(1)^(-2)/(3*C1);
-            B(1,2) = h(1)^(-2)/(3*C1);
-            C(1,2) = 1;
-            sys = ss(A,B,C,D1,'InputDelay',[tau,0]);
-            
-            obj.Gz = c2d(tf(sys), 0.5, 'zoh');
-            
-            
-            s = step(obj.Gz, obj.D/obj.Gz.Ts);
-            s = s(:,:,1);
-            
+        function u = countValue(obj,y)
+            %count actual value of output.
+            %   Detailed explanation goes here
+
+            num = zeros(1,obj.D);
+            den = zeros(1,obj.D);
+
+            % Count step response.
+            for i=1:obj.size(1,1)
+               for j= 1:obj.size(1,2)
+                    v = obj.MembershipFunctions{i,j}.getValue(y);
+                    num = num + v.*obj.s{i,j};
+                    den = den + v;
+               end
+            end
+            s = num./den;
+
             % Wyznaczanie macierzy M
             obj.M = zeros(obj.N, obj.Nu);
             for i=1:1:obj.Nu
@@ -96,15 +100,10 @@ classdef SLReg < handle
                end
             end
 
-            % Wektor wzmocnieñ
+            % Wektor wzmocnieï¿½
             obj.H=2*(obj.M'*obj.psi*obj.M+obj.LAMBDA);
-        end
-        
-        function u = countValue(obj,y)
-            %count actual value of output.
-            %   Detailed explanation goes here
-            
-            % aktualizacja wektora aktualnej wartoœci wyjœcia
+
+            % aktualizacja wektora aktualnej wartoï¿½ci wyjï¿½cia
             yk=ones(obj.N,1)*y;
 
             % wyliczenie nowego wektora odpowiedzi swobodnej

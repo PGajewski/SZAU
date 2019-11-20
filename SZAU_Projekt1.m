@@ -211,8 +211,7 @@ T=0.5;
 i = 1;
 for local_F1p=F1p_array
     %Simulate non linear object to get h vector of new work point.
-    [t,x,y] = objectSimulation([0 local_F1p],[0 FDp],tau, sim_time, [0.1, 0.1]);
-    x_p = x(:,end);
+    x_p = getLinearModel(local_F1p,FDp)
     h1p_array = [h1p_array x_p(1)];
     h2p_array = [h2p_array x_p(2)];
     %Linearization.
@@ -224,16 +223,15 @@ for local_F1p=F1p_array
     u12 = x_p(1)^(-2)/(3*C1);
     u21 = 0;
     u22 = 0;
-
+    
     A = [a11, a12; a21, a22];
     B = [u11 u12; u21 u22];
     C = [0 1];
     D = [0 0];
 
     tfs{i} = c2d(tf(ss(A,B,C,D,'InputDelay',[tau,0])),T,'zoh');
-    tfs{i}.InputDelay = [tau/T,0];
     sss{i} = c2d(ss(A,B,C,D),T,'zoh');
-
+    sss{i}.InputDelay = [tau/T,0];
     i = i + 1;
 end
 
@@ -262,11 +260,11 @@ MembershipFunctions{5}=MembershipFunction([(F1p+40) 0; (F1p+50) 1]);
 
 %Prepare x_0 of models.
 x_0_models = cell(1,5);
-x_0_models{1} = [h1p_array(1) h2p_array(1)];
-x_0_models{2} = [h1p_array(2) h2p_array(2)];
-x_0_models{3} = [h1p_array(3) h2p_array(3)];
-x_0_models{4} = [h1p_array(4) h2p_array(4)];
-x_0_models{5} = [h1p_array(5) h2p_array(5)];
+x_0_models{1} = [h1p_array(1); h2p_array(1)];
+x_0_models{2} = [h1p_array(2); h2p_array(2)];
+x_0_models{3} = [h1p_array(3); h2p_array(3)];
+x_0_models{4} = [h1p_array(4); h2p_array(4)];
+x_0_models{5} = [h1p_array(5); h2p_array(5)];
 
 %Prepare x_0 of models.
 u_0_models = cell(1,5);
@@ -279,33 +277,30 @@ u_0_models{5} = [F1p_array(5); FDp];
 %Main simulation.
 %%Prepare DMC regulator.
 fuzzy_obj = FuzzyObject(LocalObjects, MembershipFunctions,x_0_models, u_0_models);
-fuzzy_obj.reset([h1p h2p]);
+fuzzy_obj.reset([h1p;h2p],[F1p;FDp]);
 
 uk= ones(Tk,1).*(F1p+5);
-y1 = ones(Tk, 1).*h2p;
-y2 = ones(Tk, 1).*h2p;
+y2 = zeros(Tk, 1);
 
-h1 = [h1p, h2p];
-h2 = [h1p, h2p];
-
+h1 = [h1p; h2p];
+h2 = [h1p; h2p];
 %Main simulation loop.
-for k=2:Tk
-    if k > tau/T
-        %Non linear object.
-        stateHandler = @(t,x) stateFunction(t,x,uk(k - (tau/T)), FDp);
-        [t, h] = ode45(stateHandler,[0 T],h1(end, :), options);
-        h1 = [h1; h];
-        y1(k) = h1(end,2);
-        
-        %Fuzzy object.
-        [temp1, temp2] = fuzzy_obj.countValue([uk(k - tau/T);FDp]);
-        y2(k) = temp1;
-        h2 = [h2; temp2];
-    end
+
+F1=[0, F1p;
+    1 F1p+5];
+FD=[0, FDp];
+
+[t1,x1,y1] = objectSimulation(F1,FD,tau, Tk*T, h1');
+
+for k=2:Tk    
+    %Fuzzy object.
+    [temp1, temp2] = fuzzy_obj.countValue([uk(k);FDp]);
+    y2(k) = temp1;
+    h2 = [h2 temp2];
     k
 end
 figure(8);
-plot(T:T:Tk*T,y1);
+plot(t1,y1);
 hold on;
 plot(T:T:Tk*T,y2);
 title('Porownanie obiektu nieliniowego oraz rozmytego');

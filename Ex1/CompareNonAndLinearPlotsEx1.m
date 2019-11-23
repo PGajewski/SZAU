@@ -1,5 +1,5 @@
 function CompareNonAndLinearPlotsEx1(F1JumpVal, F1JumpTime, FdJumpVal, FdJumpTime, sim_time)
-
+% CompareNonAndLinearPlotsEx1(73+20, 500, 14+5, 500, 2000)
 F1p=73;
 FDp=14;
 tau=150;
@@ -87,4 +87,4 @@ legend('F1','Fd - zak³ócenie', 'Location', 'southeast');
 xlabel('Czas [s]');
 ylabel('Wejœcia obiektu');
 title(sprintf('Przebieg wejœæ po linearyzacji'));
-print(sprintf('pdfs/SymulacjaPorownanieF1=%dFd=%d.pdf', F1JumpVal, FdJumpVal), '-dpdf');
+%print(sprintf('pdfs/SymulacjaPorownanieF1=%dFd=%d.pdf', F1JumpVal, FdJumpVal), '-dpdf');

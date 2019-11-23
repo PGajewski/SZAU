@@ -2,7 +2,49 @@ Tk = 4000;
 %Prepare ODE options.
 options = odeset('RelTol',1e-8,'AbsTol',1e-10);
 F1p = 73;
+
+tau=150;
 h1p=18.9225;
+C1 = 0.35;
+C2 = 0.3;
+alfa1 = 20;
+alfa2 = 22;
+
+F1p_array = [(F1p-60) (F1p-30) F1p (F1p+30) (F1p+60)];
+h1p_array = [];
+h2p_array = [];
+sim_time = 2000;
+tfs = cell(size(F1p_array));
+sss = cell(size(F1p_array));
+T=0.5;
+
+i = 1;
+for local_F1p=F1p_array
+    %Simulate non linear object to get h vector of new work point.
+    x_p = getLinearModel(local_F1p,FDp)
+    h1p_array = [h1p_array x_p(1)];
+    h2p_array = [h2p_array x_p(2)];
+    %Linearization.
+    a11 = alfa1 * x_p(1)^(-5/2)/(2*C1) - 2/(3*C1) * (local_F1p + FDp) * x_p(1)^(-3);
+    a12 = 0;
+    a21 = alfa1/(6*C2) * x_p(1)^(-1/2) * x_p(2)^-2;
+    a22 = -2 * alfa1/(3*C2) * sqrt(x_p(1)) * x_p(2)^-3 + alfa2/(2*C2) * x_p(2)^(-5/2);
+    u11 = x_p(1)^(-2)/(3*C1);
+    u12 = x_p(1)^(-2)/(3*C1);
+    u21 = 0;
+    u22 = 0;
+    
+    A = [a11, a12; a21, a22];
+    B = [u11 u12; u21 u22];
+    C = [0 1];
+    D = [0 0];
+
+    tfs{i} = c2d(tf(ss(A,B,C,D,'InputDelay',[tau,0])),T,'zoh');
+    sss{i} = c2d(ss(A,B,C,D),T,'zoh');
+    sss{i}.InputDelay = [tau/T,0];
+    i = i + 1;
+end
+
 h2p=15.6384;
 
 %Prepare membership functions.

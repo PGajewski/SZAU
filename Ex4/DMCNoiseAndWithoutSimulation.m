@@ -20,18 +20,18 @@ dmc = DMCReg(Gz,D, N, Nu, lambda);
 dmc.reset(F1p);
 dmc.setValue(yzad);
 
-uk= ones((Gz.InputDelay(1)),1).*F1p;
-y = ones(Tk, 1).*h2p;
+uk1= ones((Gz.InputDelay(1)),1).*F1p;
+y1 = ones(Tk, 1).*h2p;
 h = [h1p, h2p];
 
 %Main simulation loop.
 for k=2:Tk
     if k > (Gz.InputDelay(1))
-        stateHandler = @(t,x) stateFunction(t,x,uk(k - (Gz.InputDelay(1))), Fd(k));
+        stateHandler = @(t,x) stateFunction(t,x,uk1(k - (Gz.InputDelay(1))), Fd(k));
         [t, h] = ode45(stateHandler,[0 Gz.Ts],h(end, :), options);
-        y(k) = h(end,2);
+        y1(k) = h(end,2);
     end
-    uk(k) = dmcnoise.countValue(y(k), Fd(k));
+    uk1(k) = dmcnoise.countValue(y1(k), Fd(k));
 end
 
 figure();
@@ -39,13 +39,13 @@ subplot(2,2,1);
 plot(ones(Tk,1).*(yzad), 'b-');
 
 hold on;
-stairs(y, 'r');
+stairs(y1, 'r');
 legend('Wyjœcie zadane', 'Wyjœcie regulatora', 'Location', 'southeast');
 title(strcat('Regulator DMC z uwzglêdnieniem zak³óceñ'));
 xlabel('k');
 ylabel('y');
 subplot(2,2,3);
-stairs( uk, 'g');
+stairs( uk1, 'g');
 hold on;
 stairs(Fd, 'r');
 legend('Sterowanie', 'Zak³ócenie', 'Location', 'east');
@@ -53,35 +53,55 @@ xlabel('k');
 ylabel('u');
 hold off;
 
-uk= ones((Gz.InputDelay(1)),1).*F1p;
-y = ones(Tk, 1).*h2p;
+uk2= ones((Gz.InputDelay(1)),1).*F1p;
+y2 = ones(Tk, 1).*h2p;
 h = [h1p, h2p];
 
 %Main simulation loop.
 for k=2:Tk
     if k > (Gz.InputDelay(1))
-        stateHandler = @(t,x) stateFunction(t,x,uk(k - (Gz.InputDelay(1))), Fd(k));
+        stateHandler = @(t,x) stateFunction(t,x,uk2(k - (Gz.InputDelay(1))), Fd(k));
         [t, h] = ode45(stateHandler,[0 Gz.Ts],h(end, :), options);
-        y(k) = h(end,2);
+        y2(k) = h(end,2);
     end
-    uk(k) = dmc.countValue(y(k));
+    uk2(k) = dmc.countValue(y2(k));
 end
 
 
 subplot(2,2,2);
 plot(ones(Tk,1).*(yzad), 'b-');
 hold on;
-stairs(y, 'r');
+stairs(y2, 'r');
 legend('Wyjœcie zadane', 'Wyjœcie regulatora', 'Location', 'southeast');
 xlabel('k');
 ylabel('y');
 title(strcat('Regulator DMC konwencjonalny'));
 subplot(2,2,4);
-stairs( uk, 'g');
+stairs( uk2, 'g');
 hold on;
 stairs(Fd, 'r');
 legend('Sterowanie', 'Zak³ócenie', 'Location', 'east');
 xlabel('k');
 ylabel('u');
 hold off;
-print(sprintf('DMCCompareSkok=%.1f.pdf', round(Fd(end)-Fd(1), 1)), '-dpdf');
+%print(sprintf('DMCCompareSkok=%.1f.pdf', round(Fd(end)-Fd(1), 1)), '-dpdf');
+
+figure;
+subplot(2,1,1)
+plot(ones(Tk,1).*(yzad), 'b-');
+hold on;
+stairs(y2, 'r');
+stairs(y1, 'g');
+legend('Wyjœcie zadane', 'Wyjœcie regulatora bez', 'Wyjœcie regulatora z', 'Location', 'southeast');
+title(strcat('Porównanie regulatorów DMC z i bez uwzglêdniania zak³óceñ'));
+xlabel('k');
+ylabel('y');
+subplot(2,1,2);
+stairs( uk2, 'r');
+hold on;
+stairs( uk1, 'g');
+stairs(Fd, 'b');
+legend('Sterowanie bez', 'Sterowanie z', 'Zak³ócenie', 'Location', 'east');
+xlabel('k');
+ylabel('u');
+hold off;

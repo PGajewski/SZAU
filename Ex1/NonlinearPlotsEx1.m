@@ -1,6 +1,14 @@
-function NonlinearPlotsEx1(F1JumpVal, F1JumpTime, FdJumpVal, FdJumpTime, sim_time)
+function NonlinearPlotsEx1(F1JumpVal, F1JumpTime, FdJumpVal,FdJumpTime , sim_time)
+%NonlinearPlotsEx1(10, 500, 20, 1000, 2000)
+
 F1p=73;
 FDp=14;
+
+F1=[0, F1p;
+    F1JumpTime, F1p+F1JumpVal];
+FD=[0, FDp;
+    FdJumpTime, FDp+FdJumpVal];
+
 tau=150;
 h2p=15.6384;
 h1p=18.9225;
@@ -33,4 +41,4 @@ legend('F1','Fd - zak³ócenie', 'Location', 'west');
 xlabel('Czas [s]');
 ylabel('Wejœcia obiektu');
 title(sprintf('Przebieg wejœæ'));
-print(sprintf('pdfs/SymulacjaObiektu/SymulacjaF1=%dFd=%d.pdf', F1JumpVal, FdJumpVal), '-dpdf');
+%print(sprintf('pdfs/SymulacjaObiektu/SymulacjaF1=%dFd=%d.pdf', F1JumpVal, FdJumpVal), '-dpdf');

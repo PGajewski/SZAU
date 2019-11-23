@@ -1,4 +1,4 @@
-clear all;
+clear;
 close all;
 
 %wpisanie danych
@@ -23,14 +23,17 @@ sim_time = 2000;
 [t1,x1,y1] = objectSimulation(F1,FD,tau, sim_time, [h1p, h2p]);
 
 figure(1);
-plot(t1,x1);
+plot(t1,x1(1,:), 'r');
+hold on;
+plot(t1,x1(2,:), 'g');
+hold off;
 legend('h1','h2');
 xlabel('Czas [s]');
 ylabel('Stany wewnetrzne');
-title('Przebieg zmiennych stanu (symulacja)');
+title('Przebieg zmiennych stanu obiektu (symulacja)');
 
 figure(2);
-plot(t1,y1);
+plot(t1,y1, 'g');
 legend('h2')
 xlabel('czas [s]');
 ylabel('Wyjscia obiektu');
@@ -287,7 +290,7 @@ h2 = [h1p; h2p];
 %Main simulation loop.
 
 F1=[0, F1p;
-    1 F1p+5];
+    1 F1p+50];
 FD=[0, FDp];
 
 [t1,x1,y1] = objectSimulation(F1,FD,tau, Tk*T, h1');

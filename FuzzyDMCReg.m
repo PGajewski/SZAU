@@ -41,16 +41,18 @@ classdef FuzzyDMCReg < handle
         function u = countValue(obj,y)
             num = 0;
             den = 0;
+            u_local = 0;
             for i=1:obj.DMCs_number(1,1)
                for j= 1:obj.DMCs_number(1,2)
                    v = obj.MembershipFunctions{i,j}.getValue(y);
-                   u_local = obj.LocalDMCs{i,j}.countValue(y);
-                   num  = num + v*u_local;
-                   den = den + v;
+                   u_local = u_local + obj.LocalDMCs{i,j}.countValue(y).*v;
+                   %num  = num + v*u_local;
+                   %den = den + v;
+                   num = num + v;
                end
             end
-            u = num/den;
-            
+            %u = num/den;
+            u = u_local./num;
             %Update regulator for real u value.
             for i=1:obj.DMCs_number(1,1)
                for j= 1:obj.DMCs_number(1,2)

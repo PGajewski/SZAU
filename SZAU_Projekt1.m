@@ -282,7 +282,7 @@ u_0_models{5} = [F1p_array(5); FDp];
 fuzzy_obj = FuzzyObject(LocalObjects, MembershipFunctions,x_0_models, u_0_models);
 fuzzy_obj.reset([h1p;h2p],[F1p;FDp]);
 
-uk= ones(Tk,1).*(F1p+5);
+uk= ones(Tk,1).*(F1p+50);
 y2 = zeros(Tk, 1);
 
 h1 = [h1p; h2p];
@@ -311,6 +311,7 @@ title('Porownanie obiektu nieliniowego oraz rozmytego');
 %% Fuzzy DMC.
 T=0.5;
 Tk = 5000;
+yzad = h2p+0.5;
 %Prepare ODE options.
 options = odeset('RelTol',1e-8,'AbsTol',1e-10);
 
@@ -334,11 +335,12 @@ MembershipFunctions{5}=MembershipFunction([(h2p_array(4)+2) 0; (h2p_array(5)-2) 
 %%Prepare DMC regulator.
 fuzzy_dmc = FuzzyDMCReg(LocalDMCs, MembershipFunctions);
 fuzzy_dmc.reset(F1p);
-fuzzy_dmc.setValue(h2p+5);
+fuzzy_dmc.setValue(yzad);
 
 uk= ones((LocalDMCs{1}.Gz.InputDelay(1)),1).*F1p;
 y = ones(Tk, 1).*h2p;
 h = [h1p, h2p];
+
 
 %Main simulation loop.
 for k=2:Tk
@@ -354,14 +356,16 @@ end
 figure(9);
 subplot(2,1,2);
 stairs( uk, 'g');
-%title(strcat('Dzialanie regulatora dla nastaw D=', num2str(D), ' N =', num2str(N), ' Nu=', num2str(Nu), ' lambda=',num2str(lambda)));
+xlabel('k');
+ylabel('u');
 legend('Sterowanie');
 subplot(2,1,1);
-stairs(ones(Tk,1).*(h2p+5), 'b');
+stairs(ones(Tk,1).*(yzad), 'b');
 hold on;
 stairs(y, 'r');
+title('Dzialanie regulatora rozmytego dla nastaw D=2393, N =600, Nu=1, lambda=1');
 legend('Wyjœcie zadane', 'wyjœcie regulatora', 'Location', 'east');
 xlabel('k');
-ylabel('y/u');
+ylabel('y');
 hold off;
 

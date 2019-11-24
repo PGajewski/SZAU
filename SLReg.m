@@ -79,12 +79,12 @@ classdef SLReg < handle
                     den = den + v;
                end
             end
-            s = num./den;
+            obj.s = num./den;
 
             % Wyznaczanie macierzy M
             obj.M = zeros(obj.N, obj.Nu);
             for i=1:1:obj.Nu
-                obj.M(i:obj.N,i)=s(1:obj.N-i+1)';
+                obj.M(i:obj.N,i)=obj.s(1:obj.N-i+1)';
             end
 
 
@@ -93,9 +93,9 @@ classdef SLReg < handle
             for i=1:obj.N
                for j=1:obj.D-1
                   if i+j<=obj.D
-                     obj.Mp(i,j)=s(i+j)-s(j);
+                     obj.Mp(i,j)=obj.s(i+j)-obj.s(j);
                   else
-                     obj.Mp(i,j)=s(obj.D)-s(j);
+                     obj.Mp(i,j)=obj.s(obj.D)-obj.s(j);
                   end   
                end
             end

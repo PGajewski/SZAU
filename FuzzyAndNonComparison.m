@@ -1,8 +1,7 @@
 %% Fuzzy DMC.
 load Gz.mat;
-T=0.5;
 Tk = 5000;
-yzad = h2p+5;
+yzad = h2p+8;
 Dd = 2393;
 N = 600;
 Nu = 1;
@@ -22,6 +21,8 @@ h2p_array = [];
 tfs = cell(size(F1p_array));
 sss = cell(size(F1p_array));
 T=0.5;
+
+
 
 i = 1;
 for local_F1p=F1p_array
@@ -109,18 +110,19 @@ end
 
 figure();
 subplot(2,1,1);
-stairs(ones(Tk,1).*(yzad), 'b');
+stairs(ones(Tk,1).*(yzad), 'g');
 hold on;
 stairs(y1, 'r');
 stairs(y2, 'b');
 title('Dzialanie regulatora rozmytego dla nastaw D=2393, N =600, Nu=1, lambda=1');
-legend('Wyjœcie zadane', 'Wyjœcie regulatora kon.', 'Wyjœcie regulatora roz.' , 'Location', 'east');
+legend('Wyjœcie zadane', 'Wyjœcie regulatora roz.', 'Wyjœcie regulatora kon.' , 'Location', 'east');
 xlabel('k');
 ylabel('y');
 subplot(2,1,2);
 stairs( uk1, 'r');
+hold on;
 stairs( uk2, 'b');
 xlabel('k');
 ylabel('u');
-legend('Sterowanie kon.', 'Sterowanie roz.');
+legend('Sterowanie roz.', 'Sterowanie kon.');
 hold off;

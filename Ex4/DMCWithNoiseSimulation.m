@@ -5,7 +5,8 @@ Nu = 1;
 lambda =1;
 yzad = h2p+0.5;
 Tk = 4000;
-Fd = [ ones(1,Tk/2).*14, ones(1,Tk/2).*16 ] ;Tk = 4000;
+Fd = [ ones(1,Tk/2).*14, ones(1,Tk/2).*16 ];
+Tk = 4000;
 
 options = odeset('RelTol',1e-8,'AbsTol',1e-10);
 

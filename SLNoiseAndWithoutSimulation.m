@@ -1,3 +1,5 @@
+clear;
+
 Tk = 4000;
 %Prepare ODE options.
 options = odeset('RelTol',1e-8,'AbsTol',1e-10);
@@ -12,8 +14,6 @@ alfa1 = 20;
 alfa2 = 22;
 
 yzad = h2p+5;
-
-
 
 F1p_array = [(F1p-60) (F1p-30) F1p (F1p+30) (F1p+60)];
 h1p_array = [];
@@ -66,32 +66,59 @@ sl = SLReg(2393, 600, 1, 10, -3, 3, ones(600,1)*15, ones(600,1)*20,tfs, Membersh
 sl.reset(F1p);
 sl.setValue(yzad);
 
-uk= ones(300,1).*F1p;
-y = ones(Tk, 1).*h2p;
+uk1= ones(300,1).*F1p;
+y1 = ones(Tk, 1).*h2p;
 h = [h1p, h2p];
+
+Fd = [ ones(1,Tk/2).*FDp, ones(1,Tk/2).*(FDp-5) ] ;
 %Main simulation loop.
 for k=2:Tk
     k
     if k > (300)
-        stateHandler = @(t,x) stateFunction(t,x,uk(k - 300), 14);
+        stateHandler = @(t,x) stateFunction(t,x,uk1(k - 300), Fd(k));
         [t, h] = ode45(stateHandler,[0 0.5],h(end, :), options);
-        y(k) = h(end,2);
+        y1(k) = h(end,2);
     end
-    uk(k) = sl.countValue(y(k));
+    uk1(k) = sl.countValue(y1(k));
 end
 
-figure;
+%%Prepare DMC regulator.
+sl_noise = SLRegNoise(2393, 600, 1, 10, -3, 3, ones(600,1)*15, ones(600,1)*20,tfs, MembershipFunctions);
+sl_noise.reset(F1p, FDp);
+sl_noise.setValue(yzad);
+
+uk2= ones(300,1).*F1p;
+y2 = ones(Tk, 1).*h2p;
+h = [h1p, h2p];
+
+Fd = [ ones(1,Tk/2).*FDp, ones(1,Tk/2).*(FDp-5) ] ;
+%Main simulation loop.
+for k=2:Tk
+    k
+    if k > (300)
+        stateHandler = @(t,x) stateFunction(t,x,uk2(k - 300), Fd(k));
+        [t, h] = ode45(stateHandler,[0 0.5],h(end, :), options);
+        y2(k) = h(end,2);
+    end
+    uk2(k) = sl_noise.countValue(y2(k));
+end
+
+figure();
 subplot(2,1,1);
-stairs(ones(Tk,1).*(yzad), 'b');
+stairs(ones(Tk,1).*(yzad), 'g');
 hold on;
 stairs(y1, 'r');
-title('Dzialanie regulatora SL dla nastaw D=2393, N =600, Nu=1, lambda=1');
-legend('Wyjœcie zadane', 'wyjœcie regulatora', 'Location', 'east');
+stairs(y2, 'b');
+title('Dzialanie regulatora SL (Noise) dla nastaw D=2393, N =600, Nu=1, lambda=1');
+legend('Wyjœcie zadane', 'Wyjœcie regulatora z', 'Wyjœcie regulatora bez' , 'Location', 'east');
 xlabel('k');
 ylabel('y');
 subplot(2,1,2);
-stairs( uk, 'g');
-legend('Sterowanie');
+stairs( uk1, 'r');
+hold on;
+stairs( uk2, 'b');
+stairs( Fd, 'g');
 xlabel('k');
 ylabel('u');
+legend('Sterowanie z', 'Sterowanie bez', 'Zak³ócenie');
 hold off;

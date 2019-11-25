@@ -1,8 +1,8 @@
 %% Fuzzy DMC.
+clear;
 load Gz.mat;
-T=0.5;
 Tk = 5000;
-yzad = h2p+0.5;
+yzad = h2p+8;
 Dd = 2393;
 N = 600;
 Nu = 1;
@@ -52,11 +52,11 @@ end
 D = Dd;
 %Prepare local DMCs.
 LocalDMCs = cell(1,5);
-LocalDMCs{1}=DMCReg(tfs{1},2393, 600, 1, 1);
-LocalDMCs{2}=DMCReg(tfs{2},D, N, Nu, lambda);
-LocalDMCs{3}=DMCReg(tfs{3},D, N, Nu, lambda);
-LocalDMCs{4}=DMCReg(tfs{4},D, N, Nu, lambda);
-LocalDMCs{5}=DMCReg(tfs{5},D, N, Nu, lambda);
+LocalDMCs{1}=DMCRegWithNoise(tfs{1},2393, 600, 1, 1);
+LocalDMCs{2}=DMCRegWithNoise(tfs{2},D, N, Nu, lambda);
+LocalDMCs{3}=DMCRegWithNoise(tfs{3},D, N, Nu, lambda);
+LocalDMCs{4}=DMCRegWithNoise(tfs{4},D, N, Nu, lambda);
+LocalDMCs{5}=DMCRegWithNoise(tfs{5},D, N, Nu, lambda);
 
 %Prepare membership functions.
 MembershipFunctions = cell(1,5);
@@ -68,29 +68,36 @@ MembershipFunctions{5}=MembershipFunction([(h2p_array(4)+2) 0; (h2p_array(5)-2) 
 
 %Main simulation.
 %%Prepare DMC regulator.
-fuzzy_dmc = FuzzyDMCReg(LocalDMCs, MembershipFunctions);
-fuzzy_dmc.reset(F1p);
-fuzzy_dmc.setValue(yzad);
+fuzzy_dmc_noise = FuzzyDMCRegNoise(LocalDMCs, MembershipFunctions);
+fuzzy_dmc_noise.reset(F1p, FDp);
+fuzzy_dmc_noise.setValue(yzad);
 
 uk1= ones((LocalDMCs{1}.Gz.InputDelay(1)),1).*F1p;
 y1 = ones(Tk, 1).*h2p;
 h = [h1p, h2p];
 
-
+Fd = [ ones(1,Tk/2).*FDp, ones(1,Tk/2).*(FDp-5) ] ;
 %Main simulation loop.
 for k=2:Tk
     if k > (LocalDMCs{1}.Gz.InputDelay(1))
-        stateHandler = @(t,x) stateFunction(t,x,uk1(k - (LocalDMCs{1}.Gz.InputDelay(1))), FDp);
+        stateHandler = @(t,x) stateFunction(t,x,uk1(k - (LocalDMCs{1}.Gz.InputDelay(1))), Fd(k));
         [t, h] = ode45(stateHandler,[0 LocalDMCs{1}.Gz.Ts],h(end, :), options);
         y1(k) = h(end,2);
     end
-    uk1(k) = fuzzy_dmc.countValue(y1(k));
+    uk1(k) = fuzzy_dmc_noise.countValue(y1(k), Fd(k));
 end
 
+LocalDMCs = cell(1,5);
+LocalDMCs{1}=DMCReg(tfs{1},2393, 600, 1, 1);
+LocalDMCs{2}=DMCReg(tfs{2},D, N, Nu, lambda);
+LocalDMCs{3}=DMCReg(tfs{3},D, N, Nu, lambda);
+LocalDMCs{4}=DMCReg(tfs{4},D, N, Nu, lambda);
+LocalDMCs{5}=DMCReg(tfs{5},D, N, Nu, lambda);
 
-dmc = DMCReg(Gz,D, N, Nu, lambda);
-dmc.reset(F1p);
-dmc.setValue(yzad);
+
+fuzzy_dmc = FuzzyDMCReg(LocalDMCs, MembershipFunctions);
+fuzzy_dmc.reset(F1p);
+fuzzy_dmc.setValue(yzad);
 
 uk2= ones((Gz.InputDelay(1)),1).*F1p;
 y2 = ones(Tk, 1).*h2p;
@@ -99,28 +106,30 @@ h = [h1p, h2p];
 %Main simulation loop.
 for k=2:Tk
     if k > (Gz.InputDelay(1))
-        stateHandler = @(t,x) stateFunction(t,x,uk2(k - (Gz.InputDelay(1))), FDp);
+        stateHandler = @(t,x) stateFunction(t,x,uk2(k - (Gz.InputDelay(1))), Fd(k));
         [t, h] = ode45(stateHandler,[0 Gz.Ts],h(end, :), options);
         y2(k) = h(end,2);
     end
-    uk2(k) = dmc.countValue(y2(k));
+    uk2(k) = fuzzy_dmc.countValue(y2(k));
 end
 
 
 figure();
 subplot(2,1,1);
-stairs(ones(Tk,1).*(yzad), 'b');
+stairs(ones(Tk,1).*(yzad), 'g');
 hold on;
 stairs(y1, 'r');
 stairs(y2, 'b');
-title('Dzialanie regulatora rozmytego dla nastaw D=2393, N =600, Nu=1, lambda=1');
-legend('Wyjœcie zadane', 'Wyjœcie regulatora kon.', 'Wyjœcie regulatora roz.' , 'Location', 'east');
+title('Dzialanie regulatora rozmytego (Noise) dla nastaw D=2393, N =600, Nu=1, lambda=1');
+legend('Wyjœcie zadane', 'Wyjœcie regulatora z', 'Wyjœcie regulatora bez' , 'Location', 'east');
 xlabel('k');
 ylabel('y');
 subplot(2,1,2);
 stairs( uk1, 'r');
+hold on;
 stairs( uk2, 'b');
+stairs( Fd, 'g');
 xlabel('k');
 ylabel('u');
-legend('Sterowanie kon.', 'Sterowanie kon.');
+legend('Sterowanie z', 'Sterowanie bez', 'Zak³ócenie');
 hold off;

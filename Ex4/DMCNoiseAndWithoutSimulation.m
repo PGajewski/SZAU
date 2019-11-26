@@ -3,7 +3,7 @@ D = 2393;
 N = 600;
 Nu = 1;
 lambda =1;
-yzad = h2p+0.5;
+yzad = h2p+2;
 Tk = 4000;
 
 Fd = [ ones(1,Tk/2).*FDp, ones(1,Tk/2).*(FDp-5) ] ;

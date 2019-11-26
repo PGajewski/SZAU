@@ -15,6 +15,10 @@ classdef DMCReg < handle
         u_prev
         yzad
         deltaup
+        deltazp
+        Mpz
+        z_prev
+        Dz
     end
     
     methods

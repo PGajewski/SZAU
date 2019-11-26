@@ -100,6 +100,7 @@ classdef SLReg < handle
                end
             end
 
+
             % Wektor wzmocnie�
             obj.H=2*(obj.M'*obj.psi*obj.M+obj.LAMBDA);
 

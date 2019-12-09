@@ -44,19 +44,18 @@ Fdvector = ones(sim_time, 1);
 Fdvector(1:FD(2,1)) = FD(1,2);
 Fdvector(FD(2,1):sim_time) = FD(2,2);
 
-subplot(2,2,1);
+subplot(2,1,1);
 plot(t,h);
-legend('h1','h2 - wyjœcie', 'Location', 'northeast'); % northeast
 xlabel('Czas [s]');
 ylabel('Stany wewnetrzne');
-title('Przebieg zmiennych stanu');
+title('Porównanie przebiegu zmiennych stanu zlinearyzowanego i nieliniowego ');
 
-subplot(2,2,3);
+subplot(2,1,2);
 plot(F1vector);
 hold on;
 plot(Fdvector);
 hold off;
-legend('F1','Fd - zak³ócenie', 'Location', 'southeast');
+legend('F1','Fd - zak³ócenie', 'Location', 'east');
 xlabel('Czas [s]');
 ylabel('Wejœcia obiektu');
 title(sprintf('Przebieg wejœæ'));
@@ -71,20 +70,10 @@ FD=[0, 0;
 
 h = h + ones(size(h)).*[h1p,h2p];
 
-subplot(2,2,2);
-plot(t,h);
-legend('h1','h2 - wyjœcie', 'Location', 'northeast'); % northeast
-xlabel('Czas [s]');
-ylabel('Stany wewnetrzne');
-title('Przebieg zmiennych stanu po linearyzacji');
-
-subplot(2,2,4);
-plot(F1vector);
+subplot(2,1,1);
 hold on;
-plot(Fdvector);
+plot(t,h);
+legend('h1','h2 - wyjœcie', 'h1 lin','h2 lin - wyjœcie', 'Location', 'northeast'); % northeast
 hold off;
-legend('F1','Fd - zak³ócenie', 'Location', 'southeast');
-xlabel('Czas [s]');
-ylabel('Wejœcia obiektu');
-title(sprintf('Przebieg wejœæ po linearyzacji'));
-%print(sprintf('pdfs/SymulacjaPorownanieF1=%dFd=%d.pdf', F1JumpVal, FdJumpVal), '-dpdf');
+
+print(strcat('SymulacjaPorownanieF1=', num2str(F1JumpVal),'Fd=', num2str(FdJumpVal), '.pdf'), '-dpdf');
